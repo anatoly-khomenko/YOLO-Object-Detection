@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import cv2
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
@@ -196,8 +197,10 @@ def plot_boxes(img, boxes, class_names, plot_labels, color = None):
     height = img.shape[0]
     
     # Create a figure and plot the image
-    fig, a = plt.subplots(1,1)
-    a.imshow(img)
+    # fig, a = plt.subplots(1,1)
+    # fig.tight_layout()
+    # plt.axis('off')
+    # plt.imshow(img)
     
     # Plot the bounding boxes and corresponding labels on top of the image
     for i in range(len(boxes)):
@@ -221,9 +224,9 @@ def plot_boxes(img, boxes, class_names, plot_labels, color = None):
             cls_id = box[6]
             classes = len(class_names)
             offset = cls_id * 123457 % classes
-            red   = get_color(2, offset, classes) / 255
-            green = get_color(1, offset, classes) / 255
-            blue  = get_color(0, offset, classes) / 255
+            red   = get_color(2, offset, classes)
+            green = get_color(1, offset, classes)
+            blue  = get_color(0, offset, classes)
             
             # If a color is given then set rgb to the given color instead
             if color is None:
@@ -232,19 +235,20 @@ def plot_boxes(img, boxes, class_names, plot_labels, color = None):
                 rgb = color
         
         # Calculate the width and height of the bounding box relative to the size of the image.
-        width_x = x2 - x1
-        width_y = y1 - y2
+        # width_x = x2 - x1
+        # width_y = y1 - y2
         
         # Set the postion and size of the bounding box. (x1, y2) is the pixel coordinate of the
         # lower-left corner of the bounding box relative to the size of the image.
-        rect = patches.Rectangle((x1, y2),
-                                 width_x, width_y,
-                                 linewidth = 2,
-                                 edgecolor = rgb,
-                                 facecolor = 'none')
+        # rect = patches.Rectangle((x1, y2),
+        #                          width_x, width_y,
+        #                          linewidth = 2,
+        #                          edgecolor = rgb,
+        #                          facecolor = 'none')
 
         # Draw the bounding box on top of the image
-        a.add_patch(rect)
+        # a.add_patch(rect)
+        img = cv2.rectangle(img, (x1, y1), (x2, y2), (blue, green, red), 2)
         
         # If plot_labels = True then plot the corresponding label
         if plot_labels:
@@ -253,27 +257,29 @@ def plot_boxes(img, boxes, class_names, plot_labels, color = None):
             conf_tx = class_names[cls_id] + ': {:.1f}'.format(cls_conf)
             
             # Define x and y offsets for the labels
-            lxc = (img.shape[1] * 0.266) / 100
-            lyc = (img.shape[0] * 1.180) / 100
+            lxc = int((img.shape[1] * 0.266) / 100)
+            lyc = int((img.shape[0] * 1.180) / 100)
             
             # Draw the labels on top of the image
-            a.text(x1 + lxc, y1 - lyc, conf_tx, fontsize = 24, color = 'k',
-                   bbox = dict(facecolor = rgb, edgecolor = rgb, alpha = 0.8))        
+            # a.text(x1 + lxc, y1 - lyc, conf_tx, fontsize = 24, color = 'k',
+            #        bbox = dict(facecolor = rgb, edgecolor = rgb, alpha = 0.8))
+            font = cv2.FONT_HERSHEY_DUPLEX
+            img = cv2.putText(img, conf_tx, (x1 + lxc, y1 - lyc), font, 0.5, rgb, 1, cv2.LINE_AA)
         
 #     plt.show()
     # A canvas must be manually attached to the figure (pyplot would automatically
     # do it).  This is done by instantiating the canvas with the figure as
     # argument.
-    canvas = FigureCanvasAgg(fig)
+    # canvas = FigureCanvasAgg(fig)
 
     # your plotting here
 
-    canvas.draw()
-    s, (width, height) = canvas.print_to_buffer()
+    # canvas.draw()
+    # s, (width, height) = canvas.print_to_buffer()
     
-    plt.close()
+    # plt.close()
 
     # Option 2a: Convert to a NumPy array.
-    X = np.fromstring(s, np.uint8).reshape((height, width, 4))
+    # X = np.fromstring(s, np.uint8).reshape((height, width, 4))
     
-    return X
+    return img
