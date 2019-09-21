@@ -270,6 +270,8 @@ def plot_boxes(img, boxes, class_names, plot_labels, color = None):
 
     canvas.draw()
     s, (width, height) = canvas.print_to_buffer()
+    
+    plt.close()
 
     # Option 2a: Convert to a NumPy array.
     X = np.fromstring(s, np.uint8).reshape((height, width, 4))
