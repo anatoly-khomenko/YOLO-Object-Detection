@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+
 
 def boxes_iou(box1, box2):
   
@@ -130,10 +133,10 @@ def detect_objects(model, img, iou_thresh, nms_thresh):
     finish = time.time()
     
     # Print the time it took to detect objects
-    print('\n\nIt took {:.3f}'.format(finish - start), 'seconds to detect the objects in the image.\n')
+#     print('\n\nIt took {:.3f}'.format(finish - start), 'seconds to detect the objects in the image.\n')
     
     # Print the number of objects detected
-    print('Number of Objects Detected:', len(boxes), '\n')
+#     print('Number of Objects Detected:', len(boxes), '\n')
     
     return boxes
 
@@ -257,4 +260,18 @@ def plot_boxes(img, boxes, class_names, plot_labels, color = None):
             a.text(x1 + lxc, y1 - lyc, conf_tx, fontsize = 24, color = 'k',
                    bbox = dict(facecolor = rgb, edgecolor = rgb, alpha = 0.8))        
         
-    plt.show()
+#     plt.show()
+    # A canvas must be manually attached to the figure (pyplot would automatically
+    # do it).  This is done by instantiating the canvas with the figure as
+    # argument.
+    canvas = FigureCanvasAgg(fig)
+
+    # your plotting here
+
+    canvas.draw()
+    s, (width, height) = canvas.print_to_buffer()
+
+    # Option 2a: Convert to a NumPy array.
+    X = np.fromstring(s, np.uint8).reshape((height, width, 4))
+    
+    return X
